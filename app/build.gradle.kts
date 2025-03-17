@@ -75,7 +75,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-
+    //Ubication and encrypt
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

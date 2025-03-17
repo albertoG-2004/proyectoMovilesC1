@@ -20,8 +20,26 @@ import com.example.moviles.ui.Products.ui.ListProductsScreen
 import com.example.moviles.ui.login.ui.LoginScreen
 import com.example.moviles.ui.theme.MovilesTheme
 import com.example.moviles.ui.Home.ui.HomeScreen
+import com.example.moviles.ui.settings.UserConfigScreen
+import com.example.moviles.ui.settings.SettingsViewModel
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 
 class MainActivity : ComponentActivity() {
+    private val masterKeyAlias by lazy {
+        MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+    }
+
+    private val encryptedSharedPreferences by lazy {
+        EncryptedSharedPreferences.create(
+            "encrypted_user_prefs",
+            masterKeyAlias,
+            applicationContext,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -31,6 +49,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    val settingsViewModel = SettingsViewModel(encryptedSharedPreferences, application)
                     NavHost(navController = navController, startDestination = "login_screen") {
                         composable("login_screen") {
                             LoginScreen(navController = navController)
@@ -41,7 +60,7 @@ class MainActivity : ComponentActivity() {
                             })
                         }
                         composable("home_screen") {
-                            HomeScreen(navController = navController)
+                            HomeScreen(navController = navController, settingsViewModel = settingsViewModel)
                         }
                         composable("add_product_screen") {
                             AddProductScreen(navController = navController)
@@ -57,6 +76,9 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("productId") { type = NavType.StringType })
                         ) { backStackEntry ->
                             EditSingleProductScreen(navController = navController, productId = backStackEntry.arguments?.getString("productId") )
+                        }
+                        composable("settings_screen") {
+                            UserConfigScreen(settingsViewModel = settingsViewModel, onBack = { navController.popBackStack() })
                         }
                     }
                 }
